@@ -7,6 +7,7 @@ public class SounderFrame extends JFrame {
         setSize(500, 500);
         setResizable(false);
         setVisible(true);
-        add(new SounderPanel());
+        setIconImage(new ImageIcon("Sounder.png").getImage());
+        add(new SounderPanel(this));
     }
 }

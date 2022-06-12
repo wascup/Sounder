@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import jaco.mp3.player.MP3Player;
 
 public class SounderPanel extends JPanel {
+    SounderFrame parentFrame;
     Color backgroundColor = Color.decode("#494949");
     Color foregroundColor = Color.decode("#606060");
     boolean isPlaying = false;
@@ -28,7 +29,8 @@ public class SounderPanel extends JPanel {
     JSlider volumeSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
     JSlider progressSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 0);
 
-    public SounderPanel() {
+    public SounderPanel(SounderFrame parentFrame) {
+        this.parentFrame = parentFrame;
         setLayout(null);
         Thread guiThread = new Thread(this::setupGUI);
         guiThread.start();
@@ -112,6 +114,7 @@ public class SounderPanel extends JPanel {
         player = new MP3Player(Songs.get(songList.getSelectedIndex()).getFile());
         player.play();
         isPlaying = true;
+        parentFrame.setTitle(Songs.get(songList.getSelectedIndex()).getTitle() + " - Sounder");
         updateAlbumArt(songList.getSelectedIndex());
         updateSongInfo(songList.getSelectedIndex());
     }
@@ -130,7 +133,7 @@ public class SounderPanel extends JPanel {
     void addEventListeners() {
         addNewSong.addActionListener(e -> addSongToList(addSong()));
         removeSong.addActionListener(e -> removeSong());
-        playButton.addActionListener(e -> playSong());
+        playButton.addActionListener(e -> toggleSong());
         songList.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -139,6 +142,17 @@ public class SounderPanel extends JPanel {
                 }
             }
         });
-        //volumeSlider.addChangeListener(e -> changeVolume(volumeSlider.getValue()));
+
+    }
+    void toggleSong() {
+        if(isPlaying) {
+            player.stop();
+            isPlaying = false;
+            playButton.setText("▶");
+        } else {
+            player.play();
+            isPlaying = true;
+            playButton.setText("||");
+        }
     }
 }
