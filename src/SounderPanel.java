@@ -27,8 +27,8 @@ public class SounderPanel extends JPanel {
     SongInfo currentSongTrack = new SongInfo("Track");
     SongInfo currentSongYear = new SongInfo("Year");
     SounderButton playButton = new SounderButton("▶");
-    SounderButton shuffleButton = new SounderButton("\uD83D\uDD01");
-    SounderButton repeatButton = new SounderButton("\uD83D\uDD00");
+    SounderButton shuffleButton = new SounderButton("");
+    SounderButton nextSongButton = new SounderButton("");
     SounderButton addNewSong = new SounderButton("+");
     SounderButton removeSong = new SounderButton("-");
     JSlider volumeSlider = new JSlider(JSlider.HORIZONTAL, 0, 100, 100);
@@ -65,8 +65,15 @@ public class SounderPanel extends JPanel {
         add(playButton);
         shuffleButton.setBounds(albumSize - 15, 345, 40, 40);
         add(shuffleButton);
-        repeatButton.setBounds(albumSize + 75, 345, 40, 40);
-        add(repeatButton);
+        ImageIcon shuffleIcon = new ImageIcon("icons/shuffle.png");
+        Image shuffleImage = shuffleIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+        shuffleButton.setIcon(new ImageIcon(shuffleImage));
+
+        nextSongButton.setBounds(albumSize + 75, 345, 40, 40);
+        ImageIcon forwardIcon = new ImageIcon("icons/forward.png");
+        Image forwardImage = forwardIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+        nextSongButton.setIcon(new ImageIcon(forwardImage));
+        add(nextSongButton);
 
         //controls for volume control
         volumeSlider.setBounds(albumSize + 130, 350, 100, 40);

@@ -25,6 +25,10 @@ public class Song {
             chooser.setVisible(true);
 
             for (File file : chooser.getFiles()) {
+                if(!file.getName().endsWith(".mp3")) {
+                    JOptionPane.showMessageDialog(null, "Please select only mp3 files for now");
+                return new Song[0];
+                }
                 Song newSong = new Song();
                 newSong.file = file;
                 newSong.filePath = file.getAbsolutePath();
