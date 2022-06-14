@@ -3,8 +3,11 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.ArrayList;
-import jaco.mp3.player.MP3Player;
+import javazoom.jl.player.advanced.AdvancedPlayer;
+import javazoom.jl.player.advanced.PlaybackEvent;
+import javazoom.jl.player.advanced.PlaybackListener;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -13,12 +16,13 @@ public class SounderPanel extends JPanel {
     Color backgroundColor = Color.decode("#494949");
     Color foregroundColor = Color.decode("#606060");
     boolean isPlaying = false;
-    MP3Player player;
+    AdvancedPlayer player;
     ArrayList<Song> Songs = new ArrayList<>();
     DefaultListModel SongModel = new DefaultListModel();
     ImageIcon songAlbum;
     JLabel currentSongAlbum;
-    public int albumSize = 200;
+    int albumSize = 200;
+    int songFrame = 0;
     JList<Song> songList = new JList<>();
     SongInfo currentSongTitle = new SongInfo("Title");
     SongInfo currentSongArtist = new SongInfo("Artist");
@@ -143,13 +147,32 @@ public class SounderPanel extends JPanel {
             isPlaying = false;
         }
         if (songSelected()) {
-            File songFile = new File(String.valueOf(Songs.get(songList.getSelectedIndex()).getFile()));
-            player = new MP3Player(songFile);
-            player.play();
-            isPlaying = true;
-            parentFrame.setTitle(Songs.get(songList.getSelectedIndex()).getTitle() + " - Sounder");
-            updateAlbumArt(songList.getSelectedIndex());
-            updateSongInfo(songList.getSelectedIndex());
+            try {
+                File songFile = new File(String.valueOf(Songs.get(songList.getSelectedIndex()).getFile()));
+                //create new thread to handle constant mp3 streaming
+                Thread songThread = new Thread(() -> {
+                    try {
+                        player = new AdvancedPlayer(new  FileInputStream(songFile));
+                        player.setPlayBackListener(new PlaybackListener() {
+                            @Override
+                            public void playbackFinished(PlaybackEvent event) {
+                                songFrame = event.getFrame();
+                            }
+                        });
+                        player.play(songFrame, Integer.MAX_VALUE);
+                        isPlaying = true;
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                });
+                songThread.start();
+                parentFrame.setTitle(Songs.get(songList.getSelectedIndex()).getTitle() + " - Sounder");
+                updateAlbumArt(songList.getSelectedIndex());
+                updateSongInfo(songList.getSelectedIndex());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
         }
     }
     //updates the album art of the current song
@@ -191,24 +214,47 @@ public class SounderPanel extends JPanel {
 
             }
         });
+        nextSongButton.addActionListener(e -> {
+            if (songSelected()) {
+                if (songList.getSelectedIndex() == Songs.size() - 1) {
+                    songList.setSelectedIndex(0);
+                } else {
+                    songList.setSelectedIndex(songList.getSelectedIndex() + 1);
+                }
+                playSong();
+            }
+        });
     }
     //for play button toggling
     void toggleSong() {
-        if(isPlaying) {
-            player.stop();
-            isPlaying = false;
-            playButton.setText("▶");
-        } else {
-            if(player == null) {
-                playSong();
+        try {
+            if(isPlaying) {
+                player.stop();
+                isPlaying = false;
+                playButton.setText("▶");
+            } else {
+                if(player == null) {
+                    playSong();
+                }
+                player.play(songFrame, Integer.MAX_VALUE);
+                isPlaying = true;
+                playButton.setText("||");
             }
-            player.play();
-            isPlaying = true;
-            playButton.setText("||");
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
     //checks if a song is selected
     boolean songSelected() {
         return songList.getSelectedIndex() != -1;
+    }
+    Song getSelectedSong() {
+        return Songs.get(songList.getSelectedIndex());
+    }
+    void setProgressSlider(int value) {
+        progressSlider.setValue(value);
+    }
+    void setProgressSliderMax(int value) {
+        progressSlider.setMaximum(value);
     }
 }
