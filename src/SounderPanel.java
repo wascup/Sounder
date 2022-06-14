@@ -1,3 +1,11 @@
+import javazoom.jl.player.advanced.AdvancedPlayer;
+import javazoom.jl.player.advanced.PlaybackEvent;
+import javazoom.jl.player.advanced.PlaybackListener;
+
+import javax.sound.sampled.AudioSystem;
+import javax.sound.sampled.FloatControl;
+import javax.sound.sampled.Mixer;
+import javax.sound.sampled.Port;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
@@ -6,10 +14,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Random;
-
-import javazoom.jl.player.advanced.AdvancedPlayer;
-import javazoom.jl.player.advanced.PlaybackEvent;
-import javazoom.jl.player.advanced.PlaybackListener;
 
 import static javax.swing.BorderFactory.createEmptyBorder;
 
@@ -44,6 +48,7 @@ public class SounderPanel extends JPanel {
 
     public SounderPanel(SounderFrame parentFrame) {
         this.parentFrame = parentFrame;
+
         setLayout(null);
         Thread guiThread = new Thread(this::setupGUI);
         guiThread.start();
@@ -163,7 +168,7 @@ public class SounderPanel extends JPanel {
                             @Override
                             public void playbackFinished(PlaybackEvent event) {
                                 songFrame = event.getFrame();
-                                if (shuffle) {
+                                if (shuffle && !newsong) {
                                     var rand = new Random();
                                     int randomIndex = rand.nextInt(songList.getModel().getSize());
                                     songList.setSelectedIndex(randomIndex);
@@ -191,10 +196,14 @@ public class SounderPanel extends JPanel {
 
         }
     }
-    void stopSong() {
-        songFrame = 0;
-        player.stop();
-        isPlaying = false;
+        void stopSong() {
+        try {
+            player.stop();
+            isPlaying = false;
+            songFrame = 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
     //for play button toggling
     void toggleSong() {
@@ -262,6 +271,7 @@ public class SounderPanel extends JPanel {
                 shuffleButton.setBackground(selectedColor);
             }
         });
+        volumeSlider.addChangeListener(e -> setVolume(volumeSlider.getValue() / 100.0f));
     }
 
     //checks if a song is selected
@@ -270,5 +280,24 @@ public class SounderPanel extends JPanel {
     }
     Song getSelectedSong() {
         return Songs.get(songList.getSelectedIndex());
+    }
+    public void setVolume(float ctrl) {
+        try {
+            Mixer.Info[] infos = AudioSystem.getMixerInfo();
+            for (Mixer.Info info : infos) {
+                Mixer mixer = AudioSystem.getMixer(info);
+                if (mixer.isLineSupported(Port.Info.SPEAKER)) {
+                    Port port = (Port) mixer.getLine(Port.Info.SPEAKER);
+                    port.open();
+                    if (port.isControlSupported(FloatControl.Type.VOLUME)) {
+                        FloatControl volume = (FloatControl) port.getControl(FloatControl.Type.VOLUME);
+                        volume.setValue(ctrl);
+                    }
+                    port.close();
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Erro\n" + e);
+        }
     }
 }

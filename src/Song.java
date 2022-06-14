@@ -19,32 +19,31 @@ public class Song {
     private double length;
     public Song[] makeSong() {
         ArrayList<Song> songs = new ArrayList<>();
-        try {
-            FileDialog chooser = new FileDialog(new JFrame(), "Select a song", FileDialog.LOAD);
-            chooser.setMultipleMode(true);
-            chooser.setVisible(true);
+        FileDialog chooser = new FileDialog(new JFrame(), "Select a song", FileDialog.LOAD);
+        chooser.setMultipleMode(true);
+        chooser.setVisible(true);
 
-            for (File file : chooser.getFiles()) {
-                if(!file.getName().endsWith(".mp3")) {
-                    JOptionPane.showMessageDialog(null, "Please select only mp3 files for now");
-                return new Song[0];
-                }
-                Song newSong = new Song();
-                newSong.file = file;
-                newSong.filePath = file.getAbsolutePath();
-                newSong.title = file.getName();
-                newSong.artist = "Unknown";
-                newSong.album = "Unknown";
-                newSong.year = "Unknown";
-                newSong.genre = "Unknown";
-                newSong.track = "Unknown";
-                newSong.length = 0;
-                newSong.albumart = new ImageIcon("placeholders/noart.png").getImage();
+        for (File file : chooser.getFiles()) {
+            Song newSong = new Song();
+            newSong.file = file;
+            newSong.filePath = file.getAbsolutePath();
+            String filename = file.getName();
+            newSong.title = filename;
+            newSong.artist = "Unknown";
+            newSong.album = "Unknown";
+            newSong.year = "Unknown";
+            newSong.genre = "Unknown";
+            newSong.track = "Unknown";
+            newSong.length = 0;
+            newSong.albumart = new ImageIcon("placeholders/noart.png").getImage();
 
+            try {
                 Mp3File mp3file = new Mp3File(file);
+
                 if (mp3file.hasId3v2Tag()) {
                     ID3v1 tag = mp3file.getId3v2Tag();
                     newSong.file = file;
+                    newSong.filePath = file.getAbsolutePath();
                     newSong.title = tag.getTitle();
                     newSong.artist = tag.getArtist();
                     newSong.album = tag.getAlbum();
@@ -58,10 +57,14 @@ public class Song {
                     newSong.filePath = file.getAbsolutePath();
                     newSong.length = mp3file.getLengthInMilliseconds();
                 }
-                songs.add(newSong);
             }
-            } catch (InvalidDataException | IOException | UnsupportedTagException ex) {
-            throw new RuntimeException(ex);
+            catch (Exception e) {
+                System.out.println("Error: " + e);
+            }
+
+
+
+            songs.add(newSong);
         }
 
         return songs.toArray(new Song[songs.size()]);

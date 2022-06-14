@@ -1,6 +1,7 @@
 import javax.swing.*;
 
 public class SounderFrame extends JFrame {
+
     public SounderFrame() {
         super("Sounder");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
