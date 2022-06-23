@@ -1,6 +1,8 @@
 import javax.swing.*;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -20,6 +22,7 @@ public class Song {
     public Song[] makeSong() {
         ArrayList<Song> songs = new ArrayList<>();
         FileDialog chooser = new FileDialog(new JFrame(), "Select a song", FileDialog.LOAD);
+        chooser.setFile("*.mp3");
         chooser.setMultipleMode(true);
         chooser.setVisible(true);
 
